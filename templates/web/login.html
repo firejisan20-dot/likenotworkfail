@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAWSAR CODEX — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:#010a18;
+    font-family:'Share Tech Mono',monospace;
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .bg-grid{
+    position:fixed;inset:0;z-index:0;
+    background-image:linear-gradient(rgba(0,212,255,.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03)1px,transparent 1px);
+    background-size:50px 50px;
+    animation:gridMove 20s linear infinite;
+  }
+  @keyframes gridMove{0%{background-position:0 0}100%{background-position:50px 50px}}
+
+  .box{
+    position:relative;z-index:2;
+    width:340px;
+    background:rgba(0,15,40,.9);
+    border:1px solid rgba(0,212,255,.35);
+    border-radius:4px;
+    padding:40px 32px;
+    box-shadow:0 0 40px rgba(0,100,255,.15),inset 0 0 30px rgba(0,20,60,.5);
+  }
+  .box::before{
+    content:'';position:absolute;top:-1px;left:20px;right:20px;height:1px;
+    background:linear-gradient(90deg,transparent,#00d4ff,transparent);
+  }
+
+  .logo{
+    font-family:'Orbitron',monospace;
+    font-size:18px;font-weight:900;
+    text-align:center;
+    letter-spacing:3px;
+    background:linear-gradient(135deg,#fff 0%,#00f0ff 50%,#0066ff 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;
+    filter:drop-shadow(0 0 10px #00d4ff);
+    margin-bottom:6px;
+  }
+  .sub{
+    text-align:center;font-size:10px;
+    color:rgba(0,212,255,.5);
+    letter-spacing:3px;margin-bottom:32px;
+  }
+
+  label{display:block;font-size:10px;color:#00bfff;letter-spacing:2px;margin-bottom:6px;}
+  .field{position:relative;margin-bottom:18px;}
+  .field input{
+    width:100%;
+    background:rgba(0,20,50,.8);
+    border:1px solid rgba(0,212,255,.2);
+    border-radius:3px;
+    padding:11px 14px;
+    color:#e0f7ff;
+    font-family:'Share Tech Mono',monospace;
+    font-size:13px;outline:none;
+    transition:all .3s;
+  }
+  .field input:focus{border-color:#00d4ff;box-shadow:0 0 12px rgba(0,212,255,.2);}
+
+  .btn{
+    width:100%;padding:13px;
+    background:transparent;
+    border:1px solid #00d4ff;
+    border-radius:3px;
+    color:#00f0ff;
+    font-family:'Orbitron',monospace;
+    font-size:12px;font-weight:700;
+    letter-spacing:3px;cursor:pointer;
+    transition:all .3s;margin-top:6px;
+  }
+  .btn:hover{background:rgba(0,212,255,.1);box-shadow:0 0 20px rgba(0,212,255,.3);}
+  .btn:active{transform:scale(.98)}
+
+  .err{
+    display:none;margin-top:14px;
+    background:rgba(255,30,60,.1);
+    border:1px solid rgba(255,50,80,.4);
+    border-radius:3px;padding:10px 14px;
+    color:#ff4d6d;font-size:11px;text-align:center;letter-spacing:1px;
+  }
+  .err.show{display:block;}
+
+  .admin-link{
+    display:block;text-align:center;
+    margin-top:20px;font-size:10px;
+    color:rgba(0,212,255,.4);letter-spacing:1px;
+    text-decoration:none;transition:color .2s;
+  }
+  .admin-link:hover{color:#00bfff;}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="box">
+  <div class="logo">KAWSAR CODEX</div>
+  <div class="sub">// LIKE WEB — SECURE LOGIN //</div>
+
+  <div class="field">
+    <label>USERNAME</label>
+    <input type="text" id="uname" placeholder="Enter username" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>PASSWORD</label>
+    <input type="password" id="upass" placeholder="Enter password">
+  </div>
+  <button class="btn" onclick="doLogin()">⚡ LOGIN</button>
+  <div class="err" id="err"></div>
+  <a href="/admin" class="admin-link">→ ADMIN PANEL</a>
+</div>
+
+<script>
+async function doLogin(){
+  const u = document.getElementById('uname').value.trim();
+  const p = document.getElementById('upass').value.trim();
+  const e = document.getElementById('err');
+  e.classList.remove('show');
+  if(!u||!p){e.textContent='Username and password required.';e.classList.add('show');return;}
+  try{
+    const r = await fetch('/api/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
+    const d = await r.json();
+    if(d.ok){
+      window.location.href = d.is_admin ? '/admin' : '/';
+    } else {
+      e.textContent = d.error || 'Login failed.';
+      e.classList.add('show');
+    }
+  }catch(err){
+    e.textContent='Server error. Try again.';e.classList.add('show');
+  }
+}
+document.addEventListener('keydown',ev=>{if(ev.key==='Enter')doLogin();});
+</script>
+</body>
+</html>

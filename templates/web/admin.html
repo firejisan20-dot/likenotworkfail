@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAWSAR CODEX — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#010a18;font-family:'Share Tech Mono',monospace;color:#e0f7ff;min-height:100vh;}
+  .bg-grid{
+    position:fixed;inset:0;z-index:0;
+    background-image:linear-gradient(rgba(0,212,255,.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03)1px,transparent 1px);
+    background-size:50px 50px;animation:gridMove 20s linear infinite;
+  }
+  @keyframes gridMove{0%{background-position:0 0}100%{background-position:50px 50px}}
+
+  /* ── AUTH GATE ── */
+  #authGate{
+    position:fixed;inset:0;z-index:100;
+    background:#010a18;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .auth-box{
+    width:320px;
+    background:rgba(0,15,40,.95);
+    border:1px solid rgba(0,212,255,.35);
+    border-radius:4px;padding:36px 28px;
+    box-shadow:0 0 40px rgba(0,100,255,.15);
+  }
+  .auth-title{
+    font-family:'Orbitron',monospace;font-size:14px;font-weight:900;
+    letter-spacing:3px;color:#00f0ff;text-align:center;margin-bottom:6px;
+  }
+  .auth-sub{font-size:10px;color:rgba(0,212,255,.4);letter-spacing:2px;text-align:center;margin-bottom:24px;}
+  .auth-box input{
+    width:100%;background:rgba(0,20,50,.8);border:1px solid rgba(0,212,255,.2);
+    border-radius:3px;padding:11px 14px;color:#e0f7ff;
+    font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;
+    transition:all .3s;margin-bottom:14px;
+  }
+  .auth-box input:focus{border-color:#00d4ff;box-shadow:0 0 12px rgba(0,212,255,.2);}
+  .auth-btn{
+    width:100%;padding:12px;background:transparent;
+    border:1px solid #00d4ff;border-radius:3px;color:#00f0ff;
+    font-family:'Orbitron',monospace;font-size:11px;font-weight:700;
+    letter-spacing:3px;cursor:pointer;transition:all .3s;
+  }
+  .auth-btn:hover{background:rgba(0,212,255,.1);}
+  .auth-err{display:none;margin-top:12px;color:#ff4d6d;font-size:11px;text-align:center;}
+  .auth-err.show{display:block;}
+
+  /* ── MAIN ── */
+  .wrap{position:relative;z-index:2;max-width:760px;margin:0 auto;padding:20px;}
+
+  /* topbar */
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    background:rgba(0,15,40,.85);border:1px solid rgba(0,212,255,.2);
+    border-radius:4px;padding:14px 20px;margin-bottom:20px;
+  }
+  .topbar-title{font-family:'Orbitron',monospace;font-size:13px;color:#00f0ff;letter-spacing:3px;}
+  .topbar-right{display:flex;gap:10px;}
+  .nav-btn{
+    font-size:10px;padding:6px 14px;border-radius:3px;cursor:pointer;
+    font-family:'Share Tech Mono',monospace;letter-spacing:1px;
+    text-decoration:none;border:1px solid;transition:all .2s;
+  }
+  .nav-btn.blue{color:#00bfff;border-color:rgba(0,191,255,.3);}
+  .nav-btn.blue:hover{background:rgba(0,191,255,.1);}
+  .nav-btn.red{color:#ff4d6d;border-color:rgba(255,77,109,.3);background:none;}
+  .nav-btn.red:hover{background:rgba(255,77,109,.1);}
+
+  /* card */
+  .card{
+    background:rgba(0,15,40,.85);border:1px solid rgba(0,212,255,.2);
+    border-radius:4px;padding:24px;margin-bottom:16px;position:relative;
+  }
+  .card::before{
+    content:'';position:absolute;top:-1px;left:20px;right:20px;height:1px;
+    background:linear-gradient(90deg,transparent,#00d4ff,transparent);
+  }
+  .card-title{
+    font-family:'Orbitron',monospace;font-size:11px;color:#00d4ff;
+    letter-spacing:3px;margin-bottom:18px;display:flex;align-items:center;gap:8px;
+  }
+  .card-title::before{content:'';display:inline-block;width:3px;height:12px;background:#00d4ff;box-shadow:0 0 6px #00d4ff;}
+
+  /* form */
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .row input{
+    flex:1;min-width:120px;
+    background:rgba(0,20,50,.8);border:1px solid rgba(0,212,255,.2);
+    border-radius:3px;padding:10px 12px;color:#e0f7ff;
+    font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;transition:all .3s;
+  }
+  .row input:focus{border-color:#00d4ff;box-shadow:0 0 10px rgba(0,212,255,.15);}
+  .add-btn{
+    padding:10px 20px;background:transparent;
+    border:1px solid #00d4ff;border-radius:3px;color:#00f0ff;
+    font-family:'Orbitron',monospace;font-size:10px;font-weight:700;
+    letter-spacing:2px;cursor:pointer;transition:all .3s;white-space:nowrap;
+  }
+  .add-btn:hover{background:rgba(0,212,255,.1);box-shadow:0 0 14px rgba(0,212,255,.2);}
+
+  .msg{font-size:11px;margin-top:10px;padding:8px 12px;border-radius:3px;display:none;}
+  .msg.ok {display:block;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.3);color:#00ff88;}
+  .msg.err{display:block;background:rgba(255,30,60,.08);border:1px solid rgba(255,50,80,.3);color:#ff4d6d;}
+
+  /* user list */
+  .user-list{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+  .user-row{
+    display:flex;justify-content:space-between;align-items:center;
+    background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.1);
+    border-radius:3px;padding:10px 14px;
+  }
+  .user-name{color:#00bfff;font-size:12px;letter-spacing:1px;}
+  .del-btn{
+    background:transparent;border:1px solid rgba(255,77,109,.3);
+    border-radius:3px;color:#ff4d6d;font-family:'Share Tech Mono',monospace;
+    font-size:10px;padding:4px 12px;cursor:pointer;letter-spacing:1px;transition:all .2s;
+  }
+  .del-btn:hover{background:rgba(255,77,109,.1);border-color:#ff4d6d;}
+  .empty{color:rgba(0,212,255,.35);font-size:11px;padding:10px 0;text-align:center;}
+
+  /* token info */
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .info-box{
+    background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.1);
+    border-radius:3px;padding:12px 16px;
+  }
+  .info-label{font-size:10px;color:rgba(0,212,255,.5);letter-spacing:2px;margin-bottom:4px;}
+  .info-val{font-size:18px;color:#00f0ff;font-family:'Orbitron',monospace;font-weight:700;}
+  .info-val.ok{color:#00ff88;}
+  .info-val.warn{color:#febc2e;}
+  .info-val.small{font-size:12px;color:#7ab8cc;}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<!-- AUTH GATE -->
+<div id="authGate">
+  <div class="auth-box">
+    <div class="auth-title">ADMIN ACCESS</div>
+    <div class="auth-sub">// KAWSAR CODEX LIKE WEB //</div>
+    <input type="password" id="adminPw" placeholder="Enter admin password">
+    <button class="auth-btn" onclick="adminLogin()">⚡ ENTER</button>
+    <div class="auth-err" id="authErr">Wrong password.</div>
+  </div>
+</div>
+
+<div class="wrap" id="mainPanel" style="display:none">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title">⚙ ADMIN PANEL</div>
+    <div class="topbar-right">
+      <a href="/" class="nav-btn blue">← MAIN</a>
+      <a href="/terminal" class="nav-btn blue">⚡ TERMINAL</a>
+      <button class="nav-btn red" onclick="logout()">LOGOUT</button>
+    </div>
+  </div>
+
+  <!-- TOKEN INFO -->
+  <div class="card">
+    <div class="card-title">TOKEN STATUS</div>
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="info-label">TOKENS IN MEMORY</div>
+        <div class="info-val ok" id="infoCnt">—</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">SERVICE STATUS</div>
+        <div class="info-val" id="infoStatus">—</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">LAST REFRESH</div>
+        <div class="info-val small" id="infoLast">—</div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">NEXT REFRESH</div>
+        <div class="info-val small" id="infoNext">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE USER -->
+  <div class="card">
+    <div class="card-title">CREATE USER</div>
+    <div class="row">
+      <input type="text"     id="newUser" placeholder="Username" autocomplete="off">
+      <input type="password" id="newPass" placeholder="Password">
+      <button class="add-btn" onclick="createUser()">+ ADD</button>
+    </div>
+    <div class="msg" id="createMsg"></div>
+  </div>
+
+  <!-- USER LIST -->
+  <div class="card">
+    <div class="card-title">USER LIST</div>
+    <div class="user-list" id="userList">
+      <div class="empty">Loading...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const ADMIN_PW = 'KAWSARXLIKE0911';
+
+function adminLogin(){
+  const pw = document.getElementById('adminPw').value;
+  if(pw === ADMIN_PW){
+    // Also login via API
+    fetch('/api/login',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:'admin',password:pw})
+    }).then(()=>{
+      document.getElementById('authGate').style.display='none';
+      document.getElementById('mainPanel').style.display='block';
+      loadData();
+    });
+  } else {
+    document.getElementById('authErr').classList.add('show');
+    setTimeout(()=>document.getElementById('authErr').classList.remove('show'),2000);
+  }
+}
+document.getElementById('adminPw').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin();});
+
+// Check if already logged in as admin
+fetch('/api/me').then(r=>r.json()).then(d=>{
+  if(d.is_admin){
+    document.getElementById('authGate').style.display='none';
+    document.getElementById('mainPanel').style.display='block';
+    loadData();
+  }
+});
+
+async function loadData(){
+  loadTokenStatus();
+  loadUsers();
+  setInterval(loadTokenStatus, 8000);
+}
+
+async function loadTokenStatus(){
+  try{
+    const r = await fetch('/token_status');
+    const d = await r.json();
+    document.getElementById('infoCnt').textContent   = d.total_tokens;
+    document.getElementById('infoLast').textContent  = d.last_refresh;
+    document.getElementById('infoNext').textContent  = d.next_refresh;
+    const s = document.getElementById('infoStatus');
+    if(d.checking_mode){
+      s.textContent='CHECKING...'; s.className='info-val warn';
+    } else {
+      s.textContent='ONLINE ✓'; s.className='info-val ok';
+    }
+  }catch(e){}
+}
+
+async function loadUsers(){
+  try{
+    const r = await fetch('/api/admin/users');
+    const d = await r.json();
+    const ul = document.getElementById('userList');
+    if(!d.users||d.users.length===0){
+      ul.innerHTML='<div class="empty">No users created yet.</div>';
+      return;
+    }
+    ul.innerHTML = d.users.map(u=>`
+      <div class="user-row">
+        <div class="user-name">👤 ${u}</div>
+        <button class="del-btn" onclick="deleteUser('${u}')">DELETE</button>
+      </div>
+    `).join('');
+  }catch(e){}
+}
+
+async function createUser(){
+  const u = document.getElementById('newUser').value.trim();
+  const p = document.getElementById('newPass').value.trim();
+  const msg = document.getElementById('createMsg');
+  msg.className='msg';
+  if(!u||!p){msg.textContent='Fill both fields.';msg.className='msg err';return;}
+  try{
+    const r = await fetch('/api/admin/users',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
+    const d = await r.json();
+    if(d.ok){
+      msg.textContent=`✓ User "${u}" created.`;msg.className='msg ok';
+      document.getElementById('newUser').value='';
+      document.getElementById('newPass').value='';
+      loadUsers();
+    } else {
+      msg.textContent=d.error||'Failed.';msg.className='msg err';
+    }
+  }catch(e){msg.textContent='Server error.';msg.className='msg err';}
+}
+
+async function deleteUser(username){
+  if(!confirm(`Delete user "${username}"?`))return;
+  try{
+    const r = await fetch(`/api/admin/users/${username}`,{method:'DELETE'});
+    const d = await r.json();
+    if(d.ok) loadUsers();
+  }catch(e){}
+}
+
+async function logout(){
+  await fetch('/api/logout',{method:'POST'});
+  window.location.href='/login';
+}
+</script>
+</body>
+</html>
